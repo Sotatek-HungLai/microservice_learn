@@ -1,4 +1,14 @@
 package com.example.ms_auth_service.dtos;
 
-public record JwtGenRequestDTO(String username, String password) {
+import lombok.Data;
+
+import javax.validation.constraints.NotNull;
+
+@Data
+public class JwtGenRequestDTO{
+    @NotNull
+    private String gmail;
+    @NotNull
+    private String password;
+
 }

@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ms_learn
+    username: example
+    password: example
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+permit-all-requests:
+  get-list:
+    - /swagger-ui
+    - /swagger-ui**
+  post-list:
+    - /api/signup
+    - /api/login
+
+base-url: http://localhost:9899
+
+server:
+  port: 9899
+

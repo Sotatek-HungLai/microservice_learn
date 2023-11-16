@@ -10,12 +10,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+@Slf4j
 @SecurityScheme(type = SecuritySchemeType.HTTP, scheme = "bearer", name = "Authorization")
+@Validated
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -31,8 +37,10 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "Generate JWT Token"),
     })
     @PostMapping("/generate-jwt")
-    public ResponseEntity<JwtGenResponseDTO> getToken(@RequestBody JwtGenRequestDTO jwtGenRequestDTO) {
-        String token = service.generateToken(jwtGenRequestDTO.username());
+    public ResponseEntity<JwtGenResponseDTO> getToken(@RequestBody @Valid JwtGenRequestDTO jwtGenRequestDTO) {
+        log.info("JwtGenRequestDTO: {}", jwtGenRequestDTO.toString());
+        String token = service.generateToken(jwtGenRequestDTO.getGmail());
+        log.info("Generated token: {}", token);
         return ResponseEntity.ok().body(new JwtGenResponseDTO(token));
     }
 
@@ -43,11 +51,12 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
     })
     @PostMapping("/verify-jwt")
-    public ResponseEntity<JwtVerifyResponseDTO> validateToken(@RequestHeader("Authorization") String token) {
-        System.out.println(token);
-        String username = service.validateToken(token);
+    public ResponseEntity<JwtVerifyResponseDTO> validateToken(@RequestHeader("Authorization") String authHeaderValue) {
+        log.info("Validate authHeaderValue: {}", authHeaderValue);
+        String gmail = service.validateToken(authHeaderValue);
+        log.info("Validated gmail: {}", gmail);
         return ResponseEntity.ok().body(
-                new JwtVerifyResponseDTO(username)
+                new JwtVerifyResponseDTO(gmail)
         );
     }
 }
