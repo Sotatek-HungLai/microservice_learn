@@ -1,10 +1,9 @@
 package com.example.ms_user_service.services;
 
-import com.example.ms_user_service.dtos.JwtGenRequestDTO;
-import com.example.ms_user_service.dtos.JwtGenResponseDTO;
-import com.example.ms_user_service.dtos.JwtVerifyResponseDTO;
+import com.example.ms_user_service.dtos.*;
 import com.example.ms_user_service.entities.UserEntity;
 import com.example.ms_user_service.exceptions.IncorrectPasswordException;
+import com.example.ms_user_service.exceptions.UserExistException;
 import com.example.ms_user_service.exceptions.UserNotFoundException;
 import com.example.ms_user_service.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,6 +24,9 @@ public class AuthService {
 
     private final RestTemplate restTemplate;
 
+    private final UserConverter userConverter;
+
+    private final PasswordEncoder passwordEncoder;
     private final String AUTH_SERVICE_API = "http://localhost:9898/api/auth";
 
     private JwtGenResponseDTO generateToken(JwtGenRequestDTO jwtGenRequestDTO) {
@@ -43,14 +46,18 @@ public class AuthService {
         return responseEntity.getBody();
     }
 
-    public void signup(UserEntity userEntity) {
+    public void signup(SignupRequestDTO requestDTO) {
+        userRepository.findByEmail(requestDTO.getEmail()).ifPresent(user -> {
+            throw new UserExistException();
+        });
+        UserEntity userEntity = userConverter.convertToEntity(requestDTO);
+        userEntity.setBalance(0.0);
         userRepository.save(userEntity);
-
     }
 
-    public JwtGenResponseDTO login(String email, String password) {
-        UserEntity foundUserEntity = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
-        if (!foundUserEntity.getPassword().equals(password)) {
+    public JwtGenResponseDTO signin(SignInRequestDTO requestDTO) {
+        UserEntity foundUserEntity = userRepository.findByEmail(requestDTO.email()).orElseThrow(UserNotFoundException::new);
+        if (!passwordEncoder.matches(requestDTO.password(), foundUserEntity.getPassword())) {
             throw new IncorrectPasswordException();
         }
         JwtGenRequestDTO jwtGenRequestDTO = JwtGenRequestDTO.builder().gmail(foundUserEntity.getEmail()).password(foundUserEntity.getPassword()).build();

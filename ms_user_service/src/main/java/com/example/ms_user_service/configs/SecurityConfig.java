@@ -1,39 +1,41 @@
 package com.example.ms_user_service.configs;
 
-import com.example.ms_user_service.entities.Role;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.servlet.http.HttpServletResponse;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 @RequiredArgsConstructor
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+
+    @Qualifier("delegatedAuthenticationEntryPoint")
+    private final AuthenticationEntryPoint authEntryPoint;
 
     private final JwtAuthFilter jwtAuthFilter;
 
-    private final AuthenticationProvider authenticationProvider;
-
+    private final PermitAllRequestsConfig permitAllRequestsConfig;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeRequests(
-                        req -> req.antMatchers("/api/signup", "/api/signin", "/api/users/hello").permitAll()
-                                .regexMatchers(HttpMethod.GET, "/api/users/\\d+/profile").hasAnyRole(Role.ADMIN.name(), Role.MEMBER.name())
-                                .regexMatchers(HttpMethod.PATCH, "/api/users/\\d+/profile").hasRole(Role.MEMBER.name())
-                                .regexMatchers(HttpMethod.PATCH, "/api/users/\\d+").hasRole(Role.ADMIN.name())
+                        req -> req.antMatchers(permitAllRequestsConfig.getPermitAllAntMatchers()).permitAll()
                                 .anyRequest().authenticated()
-                ).sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
-                .authenticationProvider(authenticationProvider)
+                ).exceptionHandling().authenticationEntryPoint(authEntryPoint).and().
+                sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

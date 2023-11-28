@@ -1,12 +1,14 @@
 package com.example.ms_user_service.entities;
 
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -22,7 +24,7 @@ public class UserEntity implements UserDetails {
 
     @Getter
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @NonNull
@@ -38,6 +40,7 @@ public class UserEntity implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(columnDefinition = "float8 default 0 check(balance >= 0)")
     private Double balance;
 
     public UserEntity(String email, String address, String phone, String password, Role role, Double balance) {
@@ -51,7 +54,10 @@ public class UserEntity implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        return authorities;
+
     }
 
     @Override

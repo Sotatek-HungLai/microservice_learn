@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/ms_product
+    username: example
+    password: example
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+permit-all-requests:
+  get-list:
+    - /swagger-ui
+    - /v3/api-docs
+    - /api/product
+
+logging:
+  level:
+    org:
+      springframework.security: DEBUG
+
+server:
+  port: 9900
+
+cloudinary:
+  api-key: 214235482284935
+  api-secret: _Gv0PtxAVmjfGE4eUPjx1XdGFhU
+  cloud-name: dzfuk5r3m
+  url: cloudinary://214235482284935:_Gv0PtxAVmjfGE4eUPjx1XdGFhU@dzfuk5r3m
+

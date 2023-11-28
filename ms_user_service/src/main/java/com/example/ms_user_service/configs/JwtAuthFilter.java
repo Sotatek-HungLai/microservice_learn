@@ -4,8 +4,11 @@ import com.example.ms_user_service.dtos.JwtVerifyResponseDTO;
 import com.example.ms_user_service.services.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,6 +21,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -28,10 +32,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final AuthService authService;
 
+    private final PermitAllRequestsConfig permitAllRequestsConfig;
+
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         System.out.println("doFilterInternal : " + request.getRequestURI());
-        if (request.getRequestURI().contains("/api/signup") || request.getRequestURI().contains("/api/signin") || request.getRequestURI().contains("/api/users/hello")) {
+
+        if (permitAllRequestsConfig.isPermitAllRequest(request.getRequestURI(), HttpMethod.resolve(request.getMethod()))) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -45,10 +52,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String email = jwtVerifyResponseDTO.gmail();
         if (email != null || SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
+            List<GrantedAuthority> grantedAuthorityList = (List<GrantedAuthority>) userDetails.getAuthorities();
+            grantedAuthorityList.add(new SimpleGrantedAuthority("ROLE_LOGGED_IN"));
+            log.info("grantedAuthorityList : {}", grantedAuthorityList.toString());
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails,
+                    userDetails.getUsername(),
                     null,
-                    userDetails.getAuthorities()
+                    grantedAuthorityList
             );
             authToken.setDetails(
                     new WebAuthenticationDetailsSource().buildDetails(request)

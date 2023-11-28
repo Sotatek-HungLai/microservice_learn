@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/ms_learn
+    url: jdbc:postgresql://localhost:5432/ms_user
     username: example
     password: example
     driver-class-name: org.postgresql.Driver
@@ -17,12 +17,16 @@ spring:
 permit-all-requests:
   get-list:
     - /swagger-ui
-    - /swagger-ui**
+    - /v3/api-docs
+    - /api/hello
   post-list:
     - /api/signup
-    - /api/login
+    - /api/signin
 
-base-url: http://localhost:9899
+logging:
+  level:
+    org:
+      springframework.security: DEBUG
 
 server:
   port: 9899

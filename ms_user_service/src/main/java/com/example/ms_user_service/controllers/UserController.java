@@ -2,41 +2,62 @@ package com.example.ms_user_service.controllers;
 
 import com.example.ms_user_service.dtos.UdpateUserProfileRequestDTO;
 import com.example.ms_user_service.dtos.UpdateUserBalanceRequestDTO;
-import com.example.ms_user_service.dtos.UserConverter;
 import com.example.ms_user_service.dtos.UserDTO;
 import com.example.ms_user_service.services.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
-    private final UserConverter userConverter;
-
-    @GetMapping("/{id}/profile")
-    public ResponseEntity<UserDTO> getUserProfile(@PathVariable("id") Long id) {
-        return ResponseEntity.ok().body(userConverter.convertToDto(userService.findUserById(id)));
+    @GetMapping("/profile")
+    @PreAuthorize("hasRole('ROLE_LOGGED_IN')")
+    public ResponseEntity<UserDTO> getUserProfile() {
+        return ResponseEntity.ok().body(userService.getUserProfile());
     }
 
-    @PatchMapping("/{id}/profile")
+    @PreAuthorize("hasRole('ROLE_LOGGED_IN')")
+    @PatchMapping("/profile")
     @ResponseStatus(HttpStatus.OK)
-    public void updateUserProfile(@PathVariable("id") Long id, @RequestBody UdpateUserProfileRequestDTO userDTO) {
-        userService.updateUserProfile(id, userDTO.address(), userDTO.phone());
+    public void updateUserProfile(@RequestBody UdpateUserProfileRequestDTO userDTO) {
+        userService.updateUserProfile(userDTO);
     }
 
-    @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PatchMapping("/users/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void updateUserBalance(@PathVariable("id") Long id, @RequestBody UpdateUserBalanceRequestDTO balanceDTO) {
-        userService.updateUserBalance(id, balanceDTO.balance());
+        userService.updateUserBalance(id, balanceDTO);
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/users/{id}")
+    public ResponseEntity<UserDTO> getUserProfileById(@PathVariable("id") Long id) {
+        return ResponseEntity.ok().body(userService.getUserProfileById(id));
+    }
+
+    @PreAuthorize("hasRole('ROLE_MEMBER')")
+    @PutMapping("/profile/balance")
+    public void updateUserBalance(@RequestBody UpdateUserBalanceRequestDTO balanceDTO) {
+        userService.updateUserBalanceInTransaction(balanceDTO);
     }
 
     @GetMapping("/hello")
+    @ResponseStatus(
+            value = HttpStatus.OK,
+            reason = "Hello World",
+            code = HttpStatus.OK
+    )
+
     public String hello() {
         return "Hello World";
     }
