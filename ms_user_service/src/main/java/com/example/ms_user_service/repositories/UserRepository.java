@@ -19,5 +19,5 @@ public interface UserRepository extends CrudRepository<UserEntity, Long>, JpaRep
     @Modifying
     @Transactional
     @Query("UPDATE UserEntity u SET u.balance = u.balance + :balance WHERE u.id = :id")
-    void udpateBalance(@Param("id") Long id, @Param("balance") Double balance);
+    Integer udpateBalance(@Param("id") Long id, @Param("balance") Double balance);
 }

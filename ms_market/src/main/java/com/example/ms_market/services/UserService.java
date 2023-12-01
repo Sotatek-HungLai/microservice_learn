@@ -35,12 +35,5 @@ public class UserService {
         return response.getBody();
     }
 
-    public void updateUserBalance(Long userId, Double amount,String authorizationHeader) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", authorizationHeader);
-        UpdateUserBalanceRequestDTO updateUserBalanceRequestDTO = new UpdateUserBalanceRequestDTO(userId,amount);
-        HttpEntity<UpdateUserBalanceRequestDTO> entity = new HttpEntity<>(updateUserBalanceRequestDTO,headers);
-        String UPDATE_BALANCE_PROFILE_API = PROFILE_API+"/balance";
-        restTemplate.exchange(UPDATE_BALANCE_PROFILE_API, HttpMethod.PUT, entity, Void.class);
-    }
+
 }

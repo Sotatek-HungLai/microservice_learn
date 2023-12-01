@@ -1,6 +1,9 @@
 package com.example.ms_product_service.dtos;
 
+import com.example.ms_product_service.entities.ProductUser;
 import lombok.*;
+
+import java.util.Set;
 
 @Getter
 @Setter
@@ -18,7 +21,5 @@ public class ProductDTO {
 
     private String imagePath;
 
-    private Long userId;
-
-    private Long amount;
+    private Set<ProductUserDTO> productUsers;
 }

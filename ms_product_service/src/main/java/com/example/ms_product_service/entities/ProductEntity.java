@@ -4,6 +4,7 @@ package com.example.ms_product_service.entities;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -12,6 +13,7 @@ import javax.persistence.*;
 @Builder
 @AllArgsConstructor
 @Table(name = "products")
+@ToString
 public class ProductEntity {
 
     @Getter
@@ -25,9 +27,6 @@ public class ProductEntity {
 
     private String imagePath;
 
-    private Long userId;
-
-    //make column default greater than 0
-    @Column(columnDefinition = "int8 default 0 check(amount >= 0)")
-    private Long amount;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    private Set<ProductUser> productUsers;
 }

@@ -23,11 +23,11 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(re);
     }
 
-    @ExceptionHandler({UserNotFoundException.class, IncorrectPasswordException.class})
-    public ResponseEntity<ErrorMessage> handleUnauthorizedException(Exception ex, WebRequest request) {
-        ErrorMessage re = new ErrorMessage(HttpStatus.UNAUTHORIZED,
+    @ExceptionHandler({UserNotFoundException.class})
+    public ResponseEntity<ErrorMessage> handleNotFoundException(Exception ex, WebRequest request) {
+        ErrorMessage re = new ErrorMessage(HttpStatus.NOT_FOUND,
                 ex.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(re);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(re);
     }
 
     @ExceptionHandler({UserExistException.class})
@@ -37,9 +37,9 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(re);
     }
 
-    @ExceptionHandler({AuthenticationException.class})
+    @ExceptionHandler({AuthenticationException.class,IncorrectPasswordException.class})
     @ResponseBody
-    public ResponseEntity<ErrorMessage> handleAuthenticationException(Exception ex) {
+    public ResponseEntity<ErrorMessage> handleUnAuthenticationException(Exception ex) {
 
         ErrorMessage re = new ErrorMessage(HttpStatus.UNAUTHORIZED,
                 ex.getMessage());
@@ -47,7 +47,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler({AccessDeniedException.class})
-    public ResponseEntity<ErrorMessage> handleAccessDeniedException(
+    public ResponseEntity<ErrorMessage> handleForbiddenException(
             Exception ex, WebRequest request) {
         ErrorMessage re = new ErrorMessage(HttpStatus.FORBIDDEN,
                 ex.getMessage());

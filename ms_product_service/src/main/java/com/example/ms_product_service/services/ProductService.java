@@ -1,16 +1,16 @@
 package com.example.ms_product_service.services;
 
-import com.example.ms_product_service.dtos.AddProductToUserDTO;
+import com.example.ms_product_service.dtos.GetProductsResponseDTO;
+import com.example.ms_product_service.dtos.MetadataPage;
 import com.example.ms_product_service.dtos.ProductDTO;
-import com.example.ms_product_service.dtos.UpdateProductAmountDTO;
-import com.example.ms_product_service.dtos.UserDTO;
 import com.example.ms_product_service.entities.ProductEntity;
 import com.example.ms_product_service.exceptions.CloudinaryException;
-import com.example.ms_product_service.exceptions.NotFoundException;
+import com.example.ms_product_service.exceptions.ProductNotFoundException;
 import com.example.ms_product_service.repositories.ProductRepository;
 import com.example.ms_product_service.utils.ProductConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,8 +30,6 @@ public class ProductService {
 
     private final CloudinaryService cloudinaryService;
 
-    private final UserService userService;
-
     public void createProduct(ProductDTO productDTO, MultipartFile image) {
         Map m = cloudinaryService.upload(image);
         if (m == null || m.get("url") == null) {
@@ -45,24 +43,34 @@ public class ProductService {
     }
 
     public ProductDTO getProduct(Long id) {
-        ProductEntity foundProductEntity = productRepository.findById(id).orElseThrow(NotFoundException::new);
+        ProductEntity foundProductEntity = productRepository.findById(id).orElseThrow(ProductNotFoundException::new);
+        log.info("foundProductEntity : {}", foundProductEntity.toString());
         return productConverter.convertToDto(foundProductEntity);
     }
 
-    public List<ProductDTO> getProducts(String keyword, int page, int size) {
+    public GetProductsResponseDTO getProducts(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        List<ProductEntity> productEntityList;
+        Page<ProductEntity> productEntityPage;
         if (keyword.isEmpty()) {
-            productEntityList = productRepository.findAll(pageable).getContent();
+            productEntityPage = productRepository.findAll(pageable);
         } else {
-            productEntityList = productRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword, pageable).getContent();
+            productEntityPage = productRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword, pageable);
         }
-        return productEntityList.stream().map(productConverter::convertToDto).toList();
+        List<ProductDTO> productDTOList = productEntityPage.getContent().stream().map(productConverter::convertToDto).toList();
+        return new GetProductsResponseDTO(
+                productDTOList,
+                new MetadataPage(
+                        productEntityPage.hasNext(),
+                        productEntityPage.hasPrevious(),
+                        productEntityPage.getTotalPages(),
+                        productEntityPage.getTotalElements()
+                )
+        );
     }
 
 
     public void deleteProduct(Long id) {
-        ProductEntity foundProductEntity = productRepository.findById(id).orElseThrow(NotFoundException::new);
+        ProductEntity foundProductEntity = productRepository.findById(id).orElseThrow(ProductNotFoundException::new);
         String publicId = getPublicId(foundProductEntity.getImagePath());
         cloudinaryService.delete(publicId);
         productRepository.deleteById(id);
@@ -74,7 +82,7 @@ public class ProductService {
     }
 
     public void updateProduct(Long id, ProductDTO productDTO, MultipartFile image) {
-        ProductEntity foundProductEntity = productRepository.findById(id).orElseThrow(NotFoundException::new);
+        ProductEntity foundProductEntity = productRepository.findById(id).orElseThrow(ProductNotFoundException::new);
         if (productDTO.getName() != null) {
             foundProductEntity.setName(productDTO.getName());
         }
@@ -95,21 +103,5 @@ public class ProductService {
 
         }
         productRepository.save(foundProductEntity);
-    }
-
-    public void addProductToUser(AddProductToUserDTO addProductToUserDTO, String authorizationHeader) {
-        ProductEntity productEntity = productRepository.findById(addProductToUserDTO.productId()).orElseThrow(NotFoundException::new);
-        UserDTO userDTO = userService.getUserProfile(addProductToUserDTO.userId(), authorizationHeader);
-        log.info("userDTO : {}", userDTO.toString());
-        if (userDTO.getId() != null) {
-            productEntity.setUserId(userDTO.getId());
-            productRepository.save(productEntity);
-        }
-
-    }
-
-    public void updateProductAmount(UpdateProductAmountDTO updateProductAmountDTO) {
-        ProductEntity productEntity = productRepository.findById(updateProductAmountDTO.id()).orElseThrow(NotFoundException::new);
-        productRepository.updateAmount(productEntity.getId(), updateProductAmountDTO.amount());
     }
 }

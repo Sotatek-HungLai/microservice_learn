@@ -27,3 +27,8 @@ logging:
 server:
   port: 9901
 
+backend-service:
+  key: "backend-key"
+  url: "http://localhost:9902/backend"
+
+

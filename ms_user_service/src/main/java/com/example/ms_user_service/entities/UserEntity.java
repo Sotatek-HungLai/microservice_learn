@@ -21,7 +21,6 @@ import java.util.List;
 @Table(name = "users")
 public class UserEntity implements UserDetails {
 
-
     @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

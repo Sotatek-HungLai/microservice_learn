@@ -27,13 +27,4 @@ public class ProductService {
         return response.getBody();
     }
 
-    public void changeProductAmount(Long id, Long amount, String authorizationHeader) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", authorizationHeader);
-        UpdateProductAmountDTO updateProductAmountDTO = new UpdateProductAmountDTO(id, amount);
-        HttpEntity<UpdateProductAmountDTO> entity = new HttpEntity<>(updateProductAmountDTO, headers);
-        String UPDATE_PRODUCT_API = PRODUCT_SERVICE_API + "/amount";
-        ResponseEntity<UpdateProductAmountDTO> response = restTemplate.exchange(UPDATE_PRODUCT_API, HttpMethod.PUT, entity, UpdateProductAmountDTO.class);
-    }
-
 }

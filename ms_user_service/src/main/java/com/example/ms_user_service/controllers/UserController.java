@@ -45,22 +45,4 @@ public class UserController {
         return ResponseEntity.ok().body(userService.getUserProfileById(id));
     }
 
-    @PreAuthorize("hasRole('ROLE_MEMBER')")
-    @PutMapping("/profile/balance")
-    public void updateUserBalance(@RequestBody UpdateUserBalanceRequestDTO balanceDTO) {
-        userService.updateUserBalanceInTransaction(balanceDTO);
-    }
-
-    @GetMapping("/hello")
-    @ResponseStatus(
-            value = HttpStatus.OK,
-            reason = "Hello World",
-            code = HttpStatus.OK
-    )
-
-    public String hello() {
-        return "Hello World";
-    }
-
-
 }

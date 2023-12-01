@@ -22,6 +22,7 @@ public class OrderEntity {
     @Column(columnDefinition = "int8 default 0 check(amount >= 0)")
     private Long amount;
 
+    @Column(columnDefinition = "float8 default 0 check(amount >= 0)")
     private Double price;
 
     private Long productId;

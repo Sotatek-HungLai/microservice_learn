@@ -19,7 +19,7 @@ public class ApiExceptionHandler {
         return new ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
     }
 
-    @ExceptionHandler({NotFoundException.class})
+    @ExceptionHandler({ProductNotFoundException.class, ProductUserNotFoundException.class})
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
     public ErrorMessage handleNotFoundException(Exception ex, WebRequest request) {
         return new ErrorMessage(HttpStatus.NOT_FOUND, ex.getLocalizedMessage());
