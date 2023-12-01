@@ -1,0 +1,32 @@
+# Use postgres/example user/password credentials
+version: '3.1'
+
+services:
+
+  db_1:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_USER: example
+      POSTGRES_DB: ms_user
+    ports:
+        - 5432:5432
+  db_2:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_USER: example
+      POSTGRES_DB: ms_product
+    ports:
+      - 5433:5432
+  db_3:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_USER: example
+      POSTGRES_DB: ms_market
+    ports:
+      - 5434:5432
